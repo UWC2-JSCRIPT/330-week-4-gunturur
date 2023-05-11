@@ -2,25 +2,21 @@
 // getNote(userId, noteId) - should get note for userId and noteId (_id)
 // getUserNotes(userId) - should get all notes for userId
 
-const mongoose = require('mongoose');
-
 const Note = require('../models/note');
-
-module.exports.getNote = (userId, noteId) => {
-    return Note.findOne({ userId, _id: noteId });
-}
-
-module.exports.getUserNotes = (userId) => {
-    return Note.find({ userId });
-}
 
 module.exports.createNote = async (userId, noteObj) => {
     const note = new Note({
-      _id: new mongoose.Types.ObjectId(),
-      userId,
-      ...noteObj,
+        userId,
+        text: noteObj.text
     });
-  
-    return note.save();
-  };
-  
+    return await note.save();
+};
+
+module.exports.getNote = async (userId, noteId) => {
+    return await Note.findOne({ _id: noteId, userId }).exec();
+};
+
+module.exports.getUserNotes = async (userId) => {
+    return await Note.find({ userId }).exec();
+};
+
