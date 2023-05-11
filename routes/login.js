@@ -76,29 +76,32 @@ router.post('/', async (req, res, next) => {
 router.post('/password', isLoggedIn, async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).send('Authorization header is required');
-
+  
     const userId = await tokenDAO.getUserIdFromToken(token);
     console.log('userID:', userId);
     if (!userId) return res.status(401).send('Invalid token');
-
+  
     const { email, password } = req.body;
+    if (password) {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        await userDAO.updateUserPassword(userId, hashedPassword);
+        return res.status(200).send('Password updated');
+      } 
     if (!email || !password) return res.status(400).send('Email and password are required');
-
+  
     if (password.trim() === '') return res.status(400).send('Password should not be empty');
-
+  
     const user = await userDAO.getUser(email);
     if (!user) return res.status(401).send('User not found');
-
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).send('Password not valid');
-
+  
     if (user._id.toString() !== userId) {
-        return res.status(401).send('Invalid token');
+      return res.status(401).send('Invalid token');
     }
-
+  
     const newToken = await tokenDAO.makeTokenForUserId(user._id);
     res.json({ token: newToken });
-});
+  });
 
 router.post('/logout', isLoggedIn, async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
