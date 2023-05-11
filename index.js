@@ -1,7 +1,7 @@
 const server = require("./server");
 const mongoose = require('mongoose');
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3005;
 
 mongoose.connect('mongodb://127.0.0.1/jscript-330-week-4', {}).then(() => {
   server.listen(port, () => {
